@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A Birthday Time Capsule — Janvi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,500;9..144,600;9..144,700&family=Work+Sans:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-deep:#0a0e27;
+    --bg-deeper:#050714;
+    --gold:#f0a94e;
+    --gold-soft:#ffd98e;
+    --rose:#e88aa3;
+    --cream:#f6f0e2;
+    --plum:#6a5480;
+    --plum-dim:#372b47;
+    --line-dim:rgba(240,169,78,0.25);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{height:100%;}
+  body{
+    background:
+      radial-gradient(ellipse 80% 50% at 50% -10%, rgba(232,138,163,.25), transparent),
+      radial-gradient(ellipse 60% 50% at 85% 15%, rgba(240,169,78,.18), transparent),
+      radial-gradient(ellipse 70% 60% at 10% 85%, rgba(106,84,128,.35), transparent),
+      radial-gradient(ellipse 90% 70% at 50% 100%, rgba(193,90,120,.2), transparent),
+      linear-gradient(180deg,#0d1130 0%, #0a0e27 40%, #0c0a24 100%);
+    color:var(--cream);
+    font-family:'Work Sans',sans-serif;
+    overflow-x:hidden;
+    position:relative;
+    min-height:100vh;
+  }
+  .vignette{position:fixed;inset:0;z-index:1;pointer-events:none;
+    background:radial-gradient(ellipse 90% 80% at 50% 50%, transparent 55%, rgba(2,3,12,.55) 100%);
+  }
+  .floaty{
+    position:fixed;z-index:2;pointer-events:none;user-select:none;
+    animation:floatUp linear forwards;will-change:transform,opacity;
+  }
+  @keyframes floatUp{
+    0%{transform:translateY(0) translateX(0) rotate(0deg);opacity:0;}
+    10%{opacity:1;}
+    90%{opacity:.9;}
+    100%{transform:translateY(-110vh) translateX(var(--drift,20px)) rotate(25deg);opacity:0;}
+  }
+  .confetti-piece{
+    position:fixed;z-index:60;pointer-events:none;border-radius:2px;
+    animation:confettiFall ease-out forwards;
+  }
+  @keyframes confettiFall{
+    0%{transform:translate(0,0) rotate(0deg);opacity:1;}
+    100%{transform:translate(var(--cx,0px),var(--cy,400px)) rotate(var(--cr,360deg));opacity:0;}
+  }
+  h1,h2,.display{font-family:'Fraunces',serif;}
+  .mono{font-family:'Space Mono',monospace;}
+
+  #stars{position:fixed;inset:0;z-index:0;pointer-events:none;}
+
+
+
+  .password-reveal{
+    margin:4px auto 0;
+    padding:10px 16px;
+    width:max-content;
+    max-width:100%;
+    border:1px solid var(--line-dim);
+    border-radius:999px;
+    color:#c9b9cf;
+    background:rgba(255,255,255,.035);
+    font-family:'Space Mono',monospace;
+    font-size:11px;
+    letter-spacing:.13em;
+  }
+  .password-reveal strong{
+    color:var(--gold-soft);
+    font-size:14px;
+    letter-spacing:.18em;
+    margin-left:5px;
+    text-shadow:0 0 10px rgba(240,169,78,.35);
+  }
+  .friendship-grid .num{font-size:clamp(1.45rem,6vw,2.15rem);}
+  #screen-2 .name{font-size:clamp(2.15rem,8.5vw,3.55rem);white-space:nowrap;}
+  .friend-note{
+    max-width:330px;
+    margin:0 auto;
+    color:#c9b9cf;
+    font-size:13px;
+    line-height:1.6;
+  }
+  .single-memory-note{
+    margin-top:15px;
+    font-size:11px;
+    line-height:1.5;
+    color:#a595b8;
+    font-family:'Space Mono',monospace;
+  }
+  .carousel-nav,.carousel-dots{display:none;}
+
+  /* ---- stepper / constellation progress ---- */
+  .stepper{
+    position:fixed;top:18px;left:50%;transform:translateX(-50%);
+    z-index:50;display:flex;flex-direction:column;align-items:center;
+    gap:6px;width:min(360px,86vw);
+  }
+  .stepper-line{position:relative;height:2px;width:100%;background:var(--line-dim);border-radius:2px;overflow:hidden;}
+  .stepper-line-fill{position:absolute;left:0;top:0;height:100%;width:0%;background:linear-gradient(90deg,var(--gold),var(--gold-soft));transition:width .6s ease;}
+  .stepper-dots{display:flex;justify-content:space-between;width:100%;margin-top:-13px;}
+  .stepper-dots span{
+    display:flex;align-items:center;justify-content:center;width:20px;height:20px;
+    color:var(--plum);opacity:.5;transition:all .5s ease;
+    background:var(--bg-deep);
+  }
+  .stepper-dots span.done{color:var(--gold);opacity:1;filter:drop-shadow(0 0 5px var(--gold));}
+
+  /* ---- screens ---- */
+  .screen{
+    position:fixed;inset:0;z-index:5;display:none;
+    flex-direction:column;align-items:center;justify-content:center;
+    text-align:center;padding:100px 24px 40px;
+    opacity:0;transition:opacity .5s ease;
+  }
+  .screen.active{display:flex;opacity:1;}
+  .eyebrow{
+    font-family:'Space Mono',monospace;letter-spacing:.2em;text-transform:uppercase;
+    font-size:12px;color:var(--gold);opacity:.9;margin-bottom:14px;
+    text-shadow:0 0 12px rgba(240,169,78,.5);
+  }
+  .name{
+    font-size:clamp(2.4rem,9vw,4rem);font-weight:600;margin-bottom:22px;
+    background:linear-gradient(135deg,var(--gold-soft),var(--gold) 40%,var(--rose));
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    filter:drop-shadow(0 0 22px rgba(240,169,78,.35));
+  }
+
+  /* lock screen */
+  .lock-card{max-width:340px;width:100%;}
+  .lock-icon{position:relative;width:60px;height:62px;margin:4px auto 20px;}
+  .lock-shackle{
+    position:absolute;left:50%;top:0;width:32px;height:32px;
+    border:6px solid var(--gold);border-bottom:none;border-radius:18px 18px 0 0;
+    transform:translateX(-50%);transform-origin:22% 100%;
+    transition:transform .55s cubic-bezier(.34,1.56,.64,1);
+    filter:drop-shadow(0 0 6px rgba(240,169,78,.4));
+  }
+  .lock-body{
+    position:absolute;left:50%;bottom:0;width:54px;height:36px;border-radius:8px;
+    background:linear-gradient(160deg,var(--gold-soft),var(--gold));
+    transform:translateX(-50%);
+    box-shadow:0 10px 22px rgba(240,169,78,.35), inset 0 0 0 2px rgba(255,255,255,.2);
+  }
+  .lock-body::after{
+    content:'';position:absolute;left:50%;top:9px;width:7px;height:7px;
+    background:var(--bg-deeper);border-radius:50%;transform:translateX(-50%);
+  }
+  .lock-icon.unlocked .lock-shackle{transform:translateX(-20%) rotate(-40deg);}
+  .pin-dots{display:flex;justify-content:center;gap:14px;margin:18px 0 28px;}
+  .pin-dots span{width:12px;height:12px;border-radius:50%;border:1.5px solid var(--gold);opacity:.4;}
+  .pin-dots span.filled{background:var(--gold);opacity:1;box-shadow:0 0 10px var(--gold);}
+  .pin-dots.shake{animation:shake .4s;}
+  @keyframes shake{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+  .keypad{display:grid;grid-template-columns:repeat(3,64px);gap:14px;justify-content:center;}
+  .keypad button{
+    width:64px;height:64px;border-radius:50%;border:1px solid var(--line-dim);
+    background:rgba(255,255,255,0.03);color:var(--cream);font-family:'Space Mono',monospace;
+    font-size:20px;cursor:pointer;transition:all .2s ease;
+  }
+  .keypad button:hover{background:rgba(240,169,78,0.12);border-color:var(--gold);}
+  .keypad button:active{transform:scale(.92);}
+  .keypad button.wide{grid-column:span 1;}
+  .hint{margin-top:20px;font-size:12px;color:var(--plum);opacity:.7;}
+
+  /* gift screen */
+  .gift-wrap{position:relative;width:170px;height:150px;display:flex;align-items:center;justify-content:center;}
+  .gift-glow{
+    position:absolute;inset:-30px;border-radius:50%;
+    background:radial-gradient(circle, rgba(232,138,163,.5), rgba(240,169,78,.25) 45%, transparent 70%);
+    animation:pulseGlow 2.4s ease-in-out infinite;
+  }
+  @keyframes pulseGlow{0%,100%{transform:scale(1);opacity:.7}50%{transform:scale(1.18);opacity:1}}
+  @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+
+  .giftbox{position:relative;width:132px;height:118px;border:none;background:none;cursor:pointer;padding:0;
+    animation:float 3s ease-in-out infinite;z-index:2;}
+  .giftbox-body{position:absolute;left:0;right:0;bottom:0;height:76px;border-radius:8px;
+    background:linear-gradient(160deg,var(--rose),#c15a78 60%,#a94764);
+    box-shadow:0 16px 34px rgba(232,138,163,.4), inset 0 0 0 2px rgba(255,255,255,.1);}
+  .giftbox-lid{position:absolute;left:-8px;right:-8px;top:32px;height:24px;border-radius:8px;
+    background:linear-gradient(160deg,#f3a7bd,var(--rose) 70%);
+    box-shadow:0 6px 16px rgba(0,0,0,.25);
+    transform-origin:center bottom;transition:transform .5s cubic-bezier(.34,1.56,.64,1),opacity .5s ease;}
+  .giftbox-ribbon-v{position:absolute;left:50%;top:0;bottom:0;width:16px;transform:translateX(-50%);
+    background:linear-gradient(180deg,var(--gold-soft),var(--gold));z-index:2;}
+  .giftbox-ribbon-h{position:absolute;left:-8px;right:-8px;top:32px;height:24px;
+    background:linear-gradient(180deg,var(--gold-soft),var(--gold));z-index:2;}
+  .giftbox-bow{position:absolute;left:50%;top:8px;transform:translateX(-50%);width:64px;height:36px;z-index:3;
+    transition:transform .45s ease,opacity .45s ease;}
+  .bow-loop{position:absolute;top:0;width:28px;height:28px;border-radius:50% 50% 50% 0;
+    background:linear-gradient(135deg,var(--gold-soft),var(--gold));box-shadow:0 3px 8px rgba(0,0,0,.15);}
+  .bow-loop-l{left:2px;transform:rotate(-45deg);}
+  .bow-loop-r{right:2px;transform:rotate(135deg);}
+  .bow-knot{position:absolute;left:50%;top:10px;transform:translateX(-50%);width:16px;height:16px;border-radius:4px;
+    background:var(--gold);box-shadow:0 2px 5px rgba(0,0,0,.25);}
+
+  .giftbox.opening .giftbox-lid{transform:translateY(-50px) rotate(-16deg);opacity:0;}
+  .giftbox.opening .giftbox-bow{transform:translateX(-50%) translateY(-50px) scale(.75);opacity:0;}
+
+  .tap-hint{margin-top:30px;font-size:14px;color:var(--gold-soft);letter-spacing:.03em;transition:opacity .3s ease;}
+
+  /* stats */
+  .cake{position:relative;width:150px;height:98px;margin:14px auto 22px;}
+  .cake-layer-bottom{position:absolute;bottom:0;left:0;right:0;height:42px;border-radius:6px;
+    background:linear-gradient(160deg,#a94764,var(--rose));box-shadow:0 12px 26px rgba(232,138,163,.35);}
+  .cake-layer-top{position:absolute;bottom:36px;left:16px;right:16px;height:32px;border-radius:6px;
+    background:linear-gradient(160deg,#f3a7bd,var(--rose));}
+  .cake-icing{position:absolute;bottom:66px;left:12px;right:12px;height:9px;border-radius:6px;
+    background:linear-gradient(160deg,var(--gold-soft),var(--gold));}
+  .candle{position:absolute;bottom:74px;width:5px;height:20px;background:var(--gold-soft);border-radius:2px;}
+  .candle-l{left:38%;}
+  .candle-c{left:50%;transform:translateX(-50%);}
+  .candle-r{right:38%;}
+  .flame{position:absolute;top:-11px;left:50%;transform:translateX(-50%);width:8px;height:11px;
+    border-radius:50% 50% 50% 50% / 60% 60% 40% 40%;
+    background:radial-gradient(circle at 50% 30%, #fff3c4, var(--gold) 55%, #c9761f 100%);
+    box-shadow:0 0 8px rgba(240,169,78,.6);animation:flicker 1.3s ease-in-out infinite;}
+  .candle-c .flame{animation-delay:.2s;}
+  .candle-r .flame{animation-delay:.4s;}
+  @keyframes flicker{0%,100%{transform:translateX(-50%) scale(1) rotate(0deg);}50%{transform:translateX(-50%) scale(.85) rotate(-4deg);}}
+  .stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px 32px;margin:0 0 40px;max-width:380px;}
+  .stat{text-align:center;}
+  .stat .num{font-family:'Space Mono',monospace;font-size:clamp(1.6rem,6vw,2.3rem);color:var(--gold);font-weight:700;}
+  .stat .label{font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--plum-dim);margin-top:4px;color:#a595b8;}
+
+  /* memories */
+  .carousel{width:min(300px,80vw);}
+  .polaroid{
+    background:#faf6ec;padding:12px 12px 30px;border-radius:3px;position:relative;
+    box-shadow:0 18px 34px rgba(0,0,0,.4);transform:rotate(-2deg);transition:transform .3s ease;
+  }
+  .polaroid::before{
+    content:'';position:absolute;top:-13px;left:50%;transform:translateX(-50%) rotate(-4deg);
+    width:64px;height:22px;background:rgba(255,255,255,.4);border:1px solid rgba(255,255,255,.5);
+    box-shadow:0 2px 4px rgba(0,0,0,.15);
+  }
+  .carousel-frame{
+    aspect-ratio:4/5;border-radius:1px;overflow:hidden;position:relative;
+    background:var(--bg-deeper);
+  }
+  .carousel-frame img{width:100%;height:100%;object-fit:cover;display:block;}
+  .photo-fallback{
+    width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    background:linear-gradient(160deg,var(--plum-dim),var(--bg-deeper));gap:10px;
+  }
+  .photo-fallback svg{opacity:.5;}
+  .photo-fallback span{font-size:11px;color:var(--plum);font-family:'Space Mono',monospace;}
+  .caption{margin-top:16px;font-size:14px;font-style:italic;color:var(--cream);opacity:.85;min-height:20px;}
+  .carousel-dots{display:flex;justify-content:center;gap:8px;margin-top:16px;}
+  .carousel-dots span{width:6px;height:6px;border-radius:50%;background:var(--plum);opacity:.5;transition:.3s;}
+  .carousel-dots span.active{background:var(--gold);opacity:1;width:18px;border-radius:3px;}
+  .carousel-nav{display:flex;gap:20px;margin-top:18px;}
+  .carousel-nav button{background:none;border:1px solid var(--line-dim);color:var(--cream);width:38px;height:38px;border-radius:50%;cursor:pointer;font-size:16px;}
+  .carousel-nav button:hover{border-color:var(--gold);color:var(--gold);}
+
+  /* balloons */
+  .balloon-counter{font-family:'Space Mono',monospace;font-size:13px;color:var(--gold-soft);margin-bottom:14px;}
+  .balloon-stage{
+    position:relative;width:min(320px,86vw);height:380px;overflow:hidden;border-radius:18px;
+    border:1px solid var(--line-dim);background:linear-gradient(180deg, rgba(255,255,255,.03), transparent);
+  }
+  .balloon{
+    position:absolute;bottom:-70px;width:48px;height:60px;
+    border-radius:50% 50% 50% 50% / 58% 58% 42% 42%;cursor:pointer;
+    box-shadow:inset -8px -8px 12px rgba(0,0,0,.18), inset 6px 6px 10px rgba(255,255,255,.2);
+    animation:balloonRise linear infinite;
+  }
+  .balloon::before{
+    content:'';position:absolute;top:12px;left:11px;width:11px;height:16px;border-radius:50%;
+    background:rgba(255,255,255,.4);filter:blur(1px);
+  }
+  .balloon::after{
+    content:'';position:absolute;bottom:-12px;left:50%;transform:translateX(-50%);
+    width:1px;height:16px;background:rgba(255,255,255,.35);
+  }
+  @keyframes balloonRise{
+    0%{transform:translateY(0) translateX(0);}
+    100%{transform:translateY(-440px) translateX(var(--sway,0px));}
+  }
+  .balloon.popped{animation:none !important;transform:scale(1.5) !important;opacity:0;transition:all .25s ease;pointer-events:none;}
+
+  /* puzzle */
+  .puzzle-moves{font-family:'Space Mono',monospace;font-size:12px;color:var(--gold-soft);margin-bottom:12px;letter-spacing:.05em;}
+  .puzzle-board{
+    width:min(300px,78vw);aspect-ratio:1;display:grid;grid-template-columns:repeat(3,1fr);
+    gap:3px;background:var(--bg-deeper);border:1px solid var(--line-dim);border-radius:10px;overflow:hidden;padding:3px;
+  }
+  .tile{
+    background-color:var(--plum-dim);background-size:300% 300%;border-radius:4px;cursor:pointer;
+    display:flex;align-items:flex-start;justify-content:flex-end;padding:4px;color:var(--gold-soft);font-family:'Space Mono',monospace;
+    transition:transform .15s ease;position:relative;
+  }
+  .tile span{
+    font-size:11px;background:rgba(5,7,20,.55);border-radius:50%;width:18px;height:18px;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .tile:hover{filter:brightness(1.1);}
+  .tile.empty{visibility:hidden;}
+  .puzzle-msg{margin-top:16px;font-size:13px;color:var(--gold);min-height:18px;}
+
+  /* letter */
+  .letter-paper{
+    max-width:380px;background:rgba(255,255,255,0.03);border:1px solid var(--line-dim);
+    border-radius:4px;padding:32px 28px;text-align:left;font-family:'Fraunces',serif;
+    font-size:15px;line-height:1.85;color:#efe6d3;white-space:pre-line;
+  }
+  .signature{margin-top:22px;font-style:italic;color:var(--gold);}
+  .wax-seal{
+    width:46px;height:46px;border-radius:50%;margin:0 auto 18px;
+    background:radial-gradient(circle at 35% 30%, #e88aa3, #a94764 70%);
+    display:flex;align-items:center;justify-content:center;font-size:18px;
+    box-shadow:0 4px 14px rgba(169,71,100,.5), inset 0 0 0 2px rgba(255,255,255,.15);
+  }
+  @keyframes fadeSlideUp{from{opacity:0;transform:translateY(18px);}to{opacity:1;transform:translateY(0);}}
+  .reveal-in{animation:fadeSlideUp .6s ease forwards;}
+
+  /* envelope */
+  .envelope{position:relative;width:180px;height:120px;border:none;background:none;cursor:pointer;padding:0;
+    animation:float 3s ease-in-out infinite;z-index:2;perspective:700px;}
+  .envelope-body{position:absolute;inset:0;border-radius:8px;overflow:hidden;
+    background:linear-gradient(160deg,#fdf1d8,var(--gold-soft) 55%,var(--gold));
+    box-shadow:0 16px 34px rgba(240,169,78,.4), inset 0 0 0 2px rgba(255,255,255,.3);}
+  .envelope-body::before,.envelope-body::after{content:'';position:absolute;top:0;width:50%;height:100%;}
+  .envelope-body::before{left:0;background:linear-gradient(135deg, transparent 48%, rgba(0,0,0,.1) 50%);}
+  .envelope-body::after{right:0;background:linear-gradient(225deg, transparent 48%, rgba(0,0,0,.1) 50%);}
+  .letter-peek{position:absolute;left:9%;right:9%;top:16%;height:0;z-index:2;
+    background:linear-gradient(180deg,#fffdf7,#f6f0e2);border-radius:4px 4px 0 0;
+    box-shadow:0 -3px 10px rgba(0,0,0,.12);
+    transition:height .5s ease .18s, top .5s ease .18s;}
+  .envelope-flap{position:absolute;left:0;top:0;width:100%;height:60%;z-index:3;
+    background:linear-gradient(160deg,var(--gold),#c98a3a);
+    clip-path:polygon(0 0,100% 0,50% 100%);
+    transform-origin:top center;backface-visibility:hidden;
+    box-shadow:0 4px 10px rgba(0,0,0,.15);
+    transition:transform .55s cubic-bezier(.6,-0.28,.74,.05), opacity .3s ease .25s;}
+  .wax-seal-mini{position:absolute;left:50%;top:24%;transform:translate(-50%,-50%);z-index:4;
+    width:32px;height:32px;border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, var(--rose), #a94764 70%);
+    box-shadow:0 3px 10px rgba(169,71,100,.5);
+    display:flex;align-items:center;justify-content:center;font-size:13px;color:#fff;
+    transition:opacity .3s ease;}
+  .envelope.open .envelope-flap{transform:rotateX(180deg);opacity:0;}
+  .envelope.open .wax-seal-mini{opacity:0;}
+  .envelope.open .letter-peek{height:72%;top:-44%;}
+
+  .next-btn,.action-btn{
+    margin-top:30px;padding:13px 30px;border-radius:30px;border:1px solid var(--gold);
+    background:transparent;color:var(--gold-soft);font-family:'Work Sans',sans-serif;
+    font-size:14px;letter-spacing:.03em;cursor:pointer;transition:all .25s ease;
+  }
+  .next-btn:hover,.action-btn:hover{background:var(--gold);color:var(--bg-deeper);}
+  .next-btn:disabled{opacity:.35;cursor:not-allowed;}
+  .next-btn:disabled:hover{background:transparent;color:var(--gold-soft);}
+  .secondary-btn{
+    margin-top:12px;background:none;border:none;color:var(--plum);font-size:12px;
+    text-decoration:underline;cursor:pointer;
+  }
+
+  .age-date{font-size:12px;color:#b9a9c8;letter-spacing:.05em;margin:-2px 0 18px;}
+  .age-stats .stat .num{font-size:clamp(1.55rem,6vw,2.2rem);}
+
+  @media (max-width:420px){
+    .keypad{grid-template-columns:repeat(3,54px);gap:10px;}
+    .keypad button{width:54px;height:54px;font-size:18px;}
+    .screen{padding:86px 18px 30px;}
+    .letter-paper{padding:24px 20px;font-size:14px;line-height:1.75;}
+    .stats-grid{gap:16px 22px;}
+    .stepper{top:12px;width:92vw;}
+    .name{margin-bottom:16px;}
+    #screen-2 .name{font-size:clamp(2rem,10vw,2.8rem);}
+  }
+  @media (max-height:640px){
+    .screen{padding-top:74px;}
+    .giftbox{transform:scale(.82);}
+    .envelope{transform:scale(.82);}
+  }
+</style>
+</head>
+<body>
+
+<canvas id="stars"></canvas>
+<div class="vignette"></div>
+
+<div class="stepper">
+  <div class="stepper-line"><div class="stepper-line-fill" id="stepperFill"></div></div>
+  <div class="stepper-dots" id="stepperDots">
+    <span><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="12" rx="1"/><path d="M3 8h18M12 8v12M12 8c-2-4-8-4-8 0M12 8c2-4 8-4 8 0"/></svg></span>
+    <span><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="1.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></span>
+    <span><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21v-7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v7"/><path d="M4 21h16"/><path d="M9 12V8c0-1 1-1.5 1-2.5S9 4 9 4M15 12V8c0-1 1-1.5 1-2.5S15 4 15 4"/></svg></span>
+
+    <span><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="9" rx="6" ry="7"/><path d="M12 16v3M10.5 21h3"/></svg></span>
+    <span><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h6v2.3a1.8 1.8 0 1 1 0 3.6V12H4V4zM14 4h6v6h-2.3a1.8 1.8 0 1 0 0 3.6V16h-6v-2.3a1.8 1.8 0 1 0-3.6 0V16H4v-6h2.3a1.8 1.8 0 1 0 0-3.6V4"/></svg></span>
+    <span><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="1.5"/><path d="M3 7l9 6 9-6"/></svg></span>
+  </div>
+</div>
+
+<!-- 1. GIFT -->
+<section class="screen active" id="screen-0">
+  <p class="eyebrow">A tiny birthday time capsule</p>
+  <div class="gift-wrap">
+    <div class="gift-glow"></div>
+    <button class="giftbox" id="giftBox" aria-label="Open gift">
+      <span class="giftbox-lid"></span>
+      <span class="giftbox-body"></span>
+      <span class="giftbox-ribbon-v"></span>
+      <span class="giftbox-ribbon-h"></span>
+      <span class="giftbox-bow">
+        <span class="bow-loop bow-loop-l"></span>
+        <span class="bow-loop bow-loop-r"></span>
+        <span class="bow-knot"></span>
+      </span>
+    </button>
+  </div>
+  <p class="tap-hint" id="giftHint">tap to open — there's a tiny surprise inside 🎁</p>
+</section>
+
+<!-- 2. LOCK -->
+<section class="screen" id="screen-1">
+  <div class="lock-card">
+    <p class="eyebrow">A little surprise, just because ✨</p>
+    <h1 class="name">Janvi</h1>
+    <div class="lock-icon" id="lockIcon">
+      <span class="lock-shackle"></span>
+      <span class="lock-body"></span>
+    </div>
+    <div class="pin-dots" id="pinDots">
+      <span></span><span></span><span></span><span></span>
+    </div>
+    <div class="password-reveal" aria-label="The password is 3110">PASSWORD <strong>3110</strong></div>
+    <div class="keypad" id="keypad"></div>
+    <p class="hint">Yep, 3110 😄 — I made sure you wouldn’t have to guess.</p>
+  </div>
+</section>
+
+<!-- 3. STATS -->
+<section class="screen" id="screen-2">
+  <p class="eyebrow">Okay… now the actual birthday part 🎂</p>
+  <h1 class="name">Happy Birthday, Janvi</h1>
+  <div class="cake" aria-hidden="true">
+    <span class="candle candle-l"><span class="flame"></span></span>
+    <span class="candle candle-c"><span class="flame"></span></span>
+    <span class="candle candle-r"><span class="flame"></span></span>
+    <span class="cake-icing"></span>
+    <span class="cake-layer-top"></span>
+    <span class="cake-layer-bottom"></span>
+  </div>
+  <p class="age-date">Born on 31 October 2006 · counting up to today</p>
+  <div class="stats-grid friendship-grid age-stats">
+    <div class="stat"><div class="num" id="stat-years">0</div><div class="label">Years old</div></div>
+    <div class="stat"><div class="num" id="stat-days">0</div><div class="label">Total days</div></div>
+    <div class="stat"><div class="num" id="stat-hours">0</div><div class="label">Total hours</div></div>
+    <div class="stat"><div class="num" id="stat-mins">0</div><div class="label">Total minutes</div></div>
+  </div>
+  <p class="friend-note" id="age-note">20 years, thousands of days, and a whole lot of moments. ✨</p>
+  <button class="next-btn" data-next>Keep going →</button>
+</section>
+
+
+<!-- 4. BALLOONS -->
+<section class="screen" id="screen-3">
+  <p class="eyebrow">Mini game: pop the balloons 🎈</p>
+  <p class="balloon-counter" id="balloonCounter">0 / 8 popped</p>
+  <div class="balloon-stage" id="balloonStage"></div>
+  <button class="next-btn" id="balloonNext" data-next disabled>Nice. Keep going →</button>
+</section>
+
+<!-- 5. PUZZLE -->
+<section class="screen" id="screen-4">
+  <p class="eyebrow">One tiny challenge 🧩</p>
+  <p class="puzzle-moves" id="puzzleMoves">Moves: 0</p>
+  <div class="puzzle-board" id="puzzleBoard"></div>
+  <p class="puzzle-msg" id="puzzleMsg">Put the numbers in order — you got this 😄</p>
+  <button class="secondary-btn" id="shuffleBtn">shuffle again</button>
+  <button class="next-btn" id="puzzleNext" data-next disabled>Read the message →</button>
+</section>
+
+<!-- 6. ENVELOPE + LETTER -->
+<section class="screen" id="screen-5">
+  <p class="eyebrow">And finally… a small note ✉️</p>
+  <div class="gift-wrap" id="envelopeWrap">
+    <div class="gift-glow" style="background:radial-gradient(circle, rgba(240,169,78,.5), rgba(255,217,142,.25) 45%, transparent 70%);"></div>
+    <button class="envelope" id="envelopeBtn" aria-label="Open letter">
+      <span class="letter-peek"></span>
+      <span class="envelope-body"></span>
+      <span class="envelope-flap"></span>
+      <span class="wax-seal-mini">★</span>
+    </button>
+  </div>
+  <p class="tap-hint" id="envelopeHint">tap to open</p>
+  <div class="wax-seal" id="waxSeal" style="display:none;">★</div>
+  <div class="letter-paper" id="letterPaper" style="display:none;"></div>
+  <!-- <p class="signature" id="signatureText" style="display:none;">prit</p> -->
+</section>
+
+<script>
+/* ============ CONFIG — edit this section to personalize ============ */
+const CONFIG = {
+  name: "Janvi",
+  birthDate: "2006-10-31",   // YYYY-MM-DD
+  pin: "3110",
+  letter:
+`Hey Janvi,
+
+Happy Birthday! 🎂
+
+I could have just sent a normal “Happy Birthday” message… 
+
+Just something I hope makes you smile for a minute.
+
+Have a really good one, Janvi.
+
+And once again sorry 
+
+— Prit`
+};
+/* ===================================================================== */
+
+/* ---------- starfield ---------- */
+const canvas = document.getElementById('stars');
+const ctx = canvas.getContext('2d');
+let stars = [];
+
+function resizeCanvas(){
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  const palette = ['#f6f0e2','#f0a94e','#e88aa3','#ffd98e'];
+
+  stars = Array.from({length: 170}, () => ({
+    x: Math.random()*canvas.width,
+    y: Math.random()*canvas.height,
+    r: Math.random()*1.6 + 0.3,
+    tw: Math.random()*Math.PI*2,
+    speed: Math.random()*0.02 + 0.005,
+    color: palette[Math.floor(Math.random()*palette.length)]
+  }));
+}
+
+function drawStars(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  stars.forEach(s=>{
+    s.tw += s.speed;
+    const alpha = 0.35 + Math.sin(s.tw)*0.35;
+    ctx.globalAlpha = Math.max(0.05, alpha);
+    ctx.fillStyle = s.color;
+    ctx.beginPath();
+    ctx.arc(s.x, s.y, s.r, 0, Math.PI*2);
+    ctx.fill();
+  });
+
+  ctx.globalAlpha = 1;
+  requestAnimationFrame(drawStars);
+}
+
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+drawStars();
+
+/* ---------- stepper ---------- */
+const dots = document.querySelectorAll('#stepperDots span');
+const fill = document.getElementById('stepperFill');
+function updateStepper(i){
+  dots.forEach((d, idx)=> d.classList.toggle('done', idx <= i));
+  fill.style.width = (i/(dots.length-1))*100 + '%';
+}
+
+/* ---------- ambient floating sparkles/hearts ---------- */
+const floatyEmojis = ['✨','⭐','🎈','🎉','🫶'];
+function spawnFloaty(){
+  const el = document.createElement('span');
+  el.className = 'floaty';
+  el.textContent = floatyEmojis[Math.floor(Math.random()*floatyEmojis.length)];
+  const size = 12 + Math.random()*14;
+  el.style.left = Math.random()*100 + 'vw';
+  el.style.bottom = '-30px';
+  el.style.fontSize = size + 'px';
+  el.style.setProperty('--drift', (Math.random()*80-40)+'px');
+  const duration = 6 + Math.random()*5;
+  el.style.animationDuration = duration + 's';
+  document.body.appendChild(el);
+  setTimeout(()=> el.remove(), duration*1000 + 200);
+}
+setInterval(spawnFloaty, 700);
+for(let i=0;i<6;i++) setTimeout(spawnFloaty, i*300);
+
+/* ---------- confetti burst ---------- */
+const confettiColors = ['#f0a94e','#ffd98e','#e88aa3','#f6f0e2','#c15a78'];
+function burstConfetti(x, y, count=26){
+  for(let i=0;i<count;i++){
+    const piece = document.createElement('span');
+    piece.className = 'confetti-piece';
+    const size = 6 + Math.random()*6;
+    piece.style.width = size + 'px';
+    piece.style.height = (size*0.4) + 'px';
+    piece.style.left = x + 'px';
+    piece.style.top = y + 'px';
+    piece.style.background = confettiColors[Math.floor(Math.random()*confettiColors.length)];
+    const angle = Math.random()*Math.PI*2;
+    const dist = 80 + Math.random()*140;
+    piece.style.setProperty('--cx', Math.cos(angle)*dist + 'px');
+    piece.style.setProperty('--cy', (Math.sin(angle)*dist*0.6 + 160) + 'px');
+    piece.style.setProperty('--cr', (Math.random()*720-360)+'deg');
+    const dur = 900 + Math.random()*500;
+    piece.style.animationDuration = dur + 'ms';
+    document.body.appendChild(piece);
+    setTimeout(()=> piece.remove(), dur+100);
+  }
+}
+function burstFromElement(el){
+  const r = el.getBoundingClientRect();
+  burstConfetti(r.left + r.width/2, r.top + r.height/2);
+}
+
+/* ---------- screen navigation ---------- */
+const screens = document.querySelectorAll('.screen');
+let current = 0;
+function goTo(i){
+  screens[current].classList.remove('active');
+  current = i;
+  screens[current].classList.add('active');
+  updateStepper(i);
+  if(i===2) animateStats();
+  if(i===3) initBalloons();
+  if(i===4) initPuzzle();
+}
+document.querySelectorAll('[data-next]').forEach(btn=>{
+  btn.addEventListener('click', ()=> goTo(current+1));
+});
+
+/* ---------- 1. gift ---------- */
+document.getElementById('giftBox').addEventListener('click', (e)=>{
+  const box = e.currentTarget;
+  if(box.classList.contains('opening')) return;
+  box.classList.add('opening');
+  document.getElementById('giftHint').style.opacity = '0';
+  burstFromElement(box);
+  setTimeout(()=> goTo(1), 550);
+});
+
+/* ---------- 2. lock screen ---------- */
+const pinDotsEl = document.getElementById('pinDots');
+const keypadEl = document.getElementById('keypad');
+let pinEntered = '';
+const keys = ['1','2','3','4','5','6','7','8','9','','0','⌫'];
+keys.forEach(k=>{
+  const b = document.createElement('button');
+  if(k===''){ b.style.visibility='hidden'; }
+  else { b.textContent = k; }
+  b.addEventListener('click', ()=>{
+    if(k==='⌫'){ pinEntered = pinEntered.slice(0,-1); }
+    else if(k!=='' && pinEntered.length<4){ pinEntered += k; }
+    renderPinDots();
+    if(pinEntered.length===4) checkPin();
+  });
+  keypadEl.appendChild(b);
+});
+function renderPinDots(){
+  [...pinDotsEl.children].forEach((d,idx)=> d.classList.toggle('filled', idx < pinEntered.length));
+}
+function checkPin(){
+  if(pinEntered === CONFIG.pin){
+    document.getElementById('lockIcon').classList.add('unlocked');
+    burstFromElement(pinDotsEl);
+    setTimeout(()=> goTo(2), 500);
+  } else {
+    pinDotsEl.classList.add('shake');
+    setTimeout(()=>{
+      pinDotsEl.classList.remove('shake');
+      pinEntered = '';
+      renderPinDots();
+    }, 400);
+  }
+}
+
+/* ---------- 3. age / time stats ---------- */
+function animateStats(){
+  const birth = new Date(CONFIG.birthDate + 'T00:00:00');
+  const now = new Date();
+
+  // Completed age in years.
+  let years = now.getFullYear() - birth.getFullYear();
+  const birthdayPassed =
+    now.getMonth() > birth.getMonth() ||
+    (now.getMonth() === birth.getMonth() && now.getDate() >= birth.getDate());
+  if(!birthdayPassed) years--;
+
+  // Total elapsed time from 31 Oct 2006 to the current moment.
+  const diffMs = Math.max(0, now - birth);
+  const targets = {
+    'stat-years': years,
+    'stat-days': Math.floor(diffMs / 86400000),
+    'stat-hours': Math.floor(diffMs / 3600000),
+    'stat-mins': Math.floor(diffMs / 60000)
+  };
+
+  const note = document.getElementById('age-note');
+  if(note) note.textContent = `${years} years old today — and counting. ✨`;
+
+  Object.entries(targets).forEach(([id, target])=>{
+    const el = document.getElementById(id);
+    if(!el) return;
+    const start = performance.now();
+    const dur = 1200;
+    function tick(t){
+      const p = Math.min(1, (t-start)/dur);
+      const eased = 1 - Math.pow(1-p, 3);
+      el.textContent = Math.floor(eased*target).toLocaleString('en-IN');
+      if(p<1) requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  });
+}
+/* ---------- 4. balloon pop game ---------- */
+function initBalloons(){
+  const stage = document.getElementById('balloonStage');
+  stage.innerHTML = '';
+  const total = 8;
+  let popped = 0;
+  document.getElementById('balloonCounter').textContent = `0 / ${total} popped`;
+  document.getElementById('balloonNext').disabled = true;
+  const colors = ['#e88aa3','#f0a94e','#ffd98e','#c15a78','#8a6aa6'];
+  for(let i=0;i<total;i++){
+    const b = document.createElement('div');
+    b.className = 'balloon';
+    b.style.left = (6 + Math.random()*78) + '%';
+    b.style.background = colors[i % colors.length];
+    b.style.setProperty('--sway', (Math.random()*50-25)+'px');
+    const dur = 5.5 + Math.random()*3.5;
+    b.style.animationDuration = dur + 's';
+    b.style.animationDelay = (Math.random()*2.5) + 's';
+    b.addEventListener('click', ()=>{
+      if(b.classList.contains('popped')) return;
+      b.classList.add('popped');
+      burstFromElement(b);
+      popped++;
+      document.getElementById('balloonCounter').textContent = `${popped} / ${total} popped`;
+      if(popped >= total){
+        document.getElementById('balloonNext').disabled = false;
+      }
+    });
+    stage.appendChild(b);
+  }
+}
+
+/* ---------- 5. sliding puzzle ---------- */
+const N = 3; // 3x3
+let board = [];
+let puzzleImgOk = false;
+let moveCount = 0;
+function initPuzzle(){
+  const msg = document.getElementById('puzzleMsg');
+  const nextBtn = document.getElementById('puzzleNext');
+  nextBtn.disabled = true;
+  msg.textContent = 'Put the numbers in order — no cheating 😄';
+  moveCount = 0;
+  document.getElementById('puzzleMoves').textContent = 'Moves: 0';
+  buildPuzzle();
+}
+function buildPuzzle(){
+  board = Array.from({length: N*N}, (_,i)=>i);
+  shuffleBoard();
+  renderPuzzle();
+}
+function shuffleBoard(){
+  // random valid moves from solved state to guarantee solvability
+  // only 3-4 moves so the puzzle solves in 3-4 taps
+  board = Array.from({length: N*N}, (_,i)=>i);
+  let empty = N*N-1;
+  let lastEmpty = -1;
+  const shuffleSteps = 3 + Math.round(Math.random()); // 3 or 4
+  for(let i=0;i<shuffleSteps;i++){
+    const neighbors = getNeighbors(empty).filter(p=>p!==lastEmpty);
+    const swapWith = neighbors[Math.floor(Math.random()*neighbors.length)];
+    [board[empty], board[swapWith]] = [board[swapWith], board[empty]];
+    lastEmpty = empty;
+    empty = swapWith;
+  }
+}
+function getNeighbors(pos){
+  const r = Math.floor(pos/N), c = pos%N;
+  const list = [];
+  if(r>0) list.push(pos-N);
+  if(r<N-1) list.push(pos+N);
+  if(c>0) list.push(pos-1);
+  if(c<N-1) list.push(pos+1);
+  return list;
+}
+function renderPuzzle(){
+  const boardEl = document.getElementById('puzzleBoard');
+  boardEl.innerHTML = '';
+  board.forEach((val, pos)=>{
+    const tile = document.createElement('div');
+    tile.className = 'tile' + (val===N*N-1 ? ' empty' : '');
+    if(val !== N*N-1){
+      tile.style.background = 'linear-gradient(160deg,var(--plum-dim),var(--bg-deeper))';
+      const hint = document.createElement('span');
+      hint.textContent = val+1;
+      tile.appendChild(hint);
+      tile.addEventListener('click', ()=> tryMove(pos));
+    }
+    boardEl.appendChild(tile);
+  });
+}
+function tryMove(pos){
+  const emptyPos = board.indexOf(N*N-1);
+  if(getNeighbors(pos).includes(emptyPos)){
+    [board[pos], board[emptyPos]] = [board[emptyPos], board[pos]];
+    moveCount++;
+    document.getElementById('puzzleMoves').textContent = 'Moves: ' + moveCount;
+    renderPuzzle();
+    checkWin();
+  }
+}
+function checkWin(){
+  const solved = board.every((v,i)=> v===i);
+  if(solved){
+    document.getElementById('puzzleMsg').textContent = `solved in ${moveCount} moves ✦`;
+    document.getElementById('puzzleNext').disabled = false;
+    burstFromElement(document.getElementById('puzzleBoard'));
+  }
+}
+document.getElementById('shuffleBtn').addEventListener('click', ()=>{
+  shuffleBoard();
+  renderPuzzle();
+  moveCount = 0;
+  document.getElementById('puzzleMoves').textContent = 'Moves: 0';
+  document.getElementById('puzzleMsg').textContent = 'solve to unlock a special message';
+  document.getElementById('puzzleNext').disabled = true;
+});
+
+/* ---------- 6. envelope + letter ---------- */
+document.getElementById('envelopeBtn').addEventListener('click', (e)=>{
+  const env = e.currentTarget;
+  if(env.classList.contains('open')) return;
+  env.classList.add('open');
+  document.getElementById('envelopeHint').style.opacity = '0';
+  burstFromElement(env);
+  setTimeout(()=>{
+    document.getElementById('envelopeWrap').style.display = 'none';
+    document.getElementById('envelopeHint').style.display = 'none';
+    const seal = document.getElementById('waxSeal');
+    const paper = document.getElementById('letterPaper');
+    const sig = document.getElementById('signatureText');
+    paper.textContent = CONFIG.letter;
+    seal.style.display = 'flex';
+    paper.style.display = 'block';
+    sig.style.display = 'block';
+    requestAnimationFrame(()=>{
+      seal.classList.add('reveal-in');
+      paper.classList.add('reveal-in');
+      sig.classList.add('reveal-in');
+    });
+    burstConfetti(window.innerWidth/2, window.innerHeight*0.35, 40);
+  }, 750);
+});
+
+/* init */
+renderPinDots();
+updateStepper(0);
+</script>
+</body>
+</html>
