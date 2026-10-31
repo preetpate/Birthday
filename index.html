@@ -401,6 +401,21 @@
       margin-bottom:10px;
     }
 
+    #screen-2 .birthday-name{
+    width:100%;
+    max-width:100%;
+    padding:0 6px;
+    text-align:center;
+    font-size:clamp(1.75rem,8.8vw,2.35rem);
+    line-height:1.12;
+    letter-spacing:-.02em;
+    white-space:normal;
+  }
+
+#screen-2 .birthday-name span{
+  display:block;
+}
+
     #screen-2 .name{
       width:100%;
       max-width:100%;
@@ -543,7 +558,10 @@
 <!-- 3. STATS -->
 <section class="screen" id="screen-2">
   <p class="eyebrow">Okay… now the actual birthday part 🎂</p>
-  <h1 class="name">Happy Birthday, Janvi</h1>
+  <h1 class="name birthday-name">
+  <span>Happy Birthday,</span>
+  <span>Janvi</span>
+  </h1>
   <div class="cake" aria-hidden="true">
     <span class="candle candle-l"><span class="flame"></span></span>
     <span class="candle candle-c"><span class="flame"></span></span>
